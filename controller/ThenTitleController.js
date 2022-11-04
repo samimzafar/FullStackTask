@@ -16,32 +16,30 @@ module.exports = (req, res) => {
           : `https://www.${address}`;
         ThenHandleSingleAddress(res, URL);
       } else {
-        let title = [];
         let endPoints = [];
         createEndpoints(address, endPoints);
-        endPoints.map((endpoint) => {
-          axios
-            .get(endpoint)
-            .then(({ data: data }) => {
+        axios
+          .all(endPoints.map((endPoint) => axios.get(endPoint)))
+          .then((data) => {
+            let responseApiTitles = [];
+            data.map(({ data }) => {
               const $ = load(data);
-              title.push($("title").html());
-              if (title.length == address.length) {
-                return res.status(200).send(
-                  `<html> <head>server Response</head><body> <h1> Following are the titles of given websites: </h1><ul>
-      ${title.map((value) => `<li>${value}</li>`).join("<br>")}
-      </ul></body></html>`
-                );
-              }
-            })
-            .catch((err) => {
-              console.log(err);
-              res
-                .status(400)
-                .send(
-                  `<html> <head>server Response</head><body> <h1> Following are the titles of given websites: </h1><ul><li>${err}</li></ul></body></html>`
-                );
+              responseApiTitles.push($("title").html());
             });
-        });
+            return res.status(200).send(
+              `<html> <head>server Response</head><body> <h1> Following are the titles of given websites: </h1><ul>
+  ${responseApiTitles.map((title) => `<li>${title}</li>`).join("<br>")}
+  </ul></body></html>`
+            );
+          })
+          .catch((err) => {
+            console.log(err);
+            res
+              .status(400)
+              .send(
+                `<html> <head>server Response</head><body> <h1> Following are the titles of given websites: </h1><ul><li>${err}</li></ul></body></html>`
+              );
+          });
       }
     }
   } catch (error) {

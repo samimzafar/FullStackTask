@@ -13,7 +13,7 @@ const AsyncHandleSingleAddress = async (res, URL) => {
 const ThenHandleSingleAddress = (res, URL) => {
   axios
     .get(URL)
-    .then(({ data: data }) => {
+    .then(({ data }) => {
       const $ = load(data);
       const title = $("title").html();
       res
